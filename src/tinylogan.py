@@ -3,6 +3,7 @@
 
 # "172.16.245.69 - - [11/Apr/2011:16:06:10 +0200] GET /URL HTTP/1.1" 200 55 7/7124818
 # "172.16.245.69 - - [11/Apr/2011:16:06:10 +0200] GET /URL HTTP/1.1" 304 - 0/15625
+# 87.191.175.139 TLSv1 RC4-SHA - - [16/Dec/2018:06:59:08 +0100] "POST /vpserver/ws/pos/POSControlManager?posip=10.104.1.105 HTTP/1.1" 200 809 "-" "JAX-WS RI 2.1.6 in JDK 6" **0/8214**
 
 import sys
 import re
@@ -17,7 +18,9 @@ from datetime import datetime, date, time, timedelta
 # greedy
 #PATTERN = r"""[^[]*\[(?P<date>\d\d/\w*/\d{4})\:(?P<time>\d\d\:\d\d\:\d\d)[^[]*\] "(?:GET|POST) (?P<url>[^?]*)(?P<querystring>\?.*)? HTTP/.*" (?P<code>\d\d\d).*(?P<sec>\d+)/(?P<micros>\d+)"""
 # non-greedy
-PATTERN = r""".*?\[(?P<date>.*?)\:(?P<time>\d\d\:\d\d\:\d\d).*?\] "(?P<method>\w+) (?P<url>.*?)(?P<querystring>\?.*?)? HTTP\/.*?" (?P<code>\d\d\d).*(?P<sec>\d+)\/(?P<micros>\d+)"""
+#PATTERN = r""".*?\[(?P<date>.*?)\:(?P<time>\d\d\:\d\d\:\d\d).*?\] "(?P<method>\w+) (?P<url>.*?)(?P<querystring>\?.*?)? HTTP\/.*?" (?P<code>\d\d\d).*(?P<sec>\d+)\/(?P<micros>\d+)"""
+#PATTERN = r""".*?\[(?P<date>.*?)\:(?P<time>\d\d\:\d\d\:\d\d).*?\] "(?P<method>\w+) (?P<url>.*?)(?P<querystring>\?.*?)? HTTP\/.*?" (?P<code>\d\d\d).* (?P<size>\d+) .*?\*\*(?P<sec>\d+)\/(?P<micros>\d+)"""
+PATTERN = r""".*?\[(?P<date>.*?)\:(?P<time>\d\d\:\d\d\:\d\d).*?\] "(?P<method>[\w-]+)\s?(?P<url>.*?)(?P<querystring>\?.*?)?\s?(HTTP\/.*?)?" (?P<code>\d\d\d).* (?P<size>\d+) .*?\*\*(?P<sec>\d+)\/(?P<micros>\d+)"""
 logLine = re.compile(PATTERN, re.I)
 
 DAY_PATTERN = r"""^(?P<day>today|yesterday|tomorrow|week|month|year)(?:(?P<modifier>\+|\-)(?P<qty>\d+))?$"""
@@ -35,11 +38,13 @@ HOME = os.path.expanduser('~')
 
 
 def numeric_compare_total(x, y):
-    return x['micros'] - y['micros']
+    return cmp(x['micros'],y['micros'])
+	#return x['micros'] - y['micros']
 
 
 def numeric_compare_average(x, y):
-    return x['average'] - y['average']
+    return cmp(x['average'],y['average'])
+	#return x['average'] - y['average']
 
 
 def str2date(st):
